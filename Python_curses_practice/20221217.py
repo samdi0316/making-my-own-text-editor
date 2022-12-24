@@ -5,23 +5,11 @@ import os
 import os.path
 import time
 
-
-#def findfile(name, path):
-#    for dirpath, dirname, finding_name in os.walk(path):
-#        if name in finding_name:
-#            return os.path.join(dirpath, name)
-
 def main(stdscr):
     curses.init_pair(1,curses.COLOR_WHITE,curses.COLOR_BLACK)     
     curses.init_pair(2,curses.COLOR_BLACK,curses.COLOR_WHITE)     
     WB_color=curses.color_pair(1)
     BW_color=curses.color_pair(2)
-
-    ##파일 검색 함수
-    def findfile(name, path):
-        for dirpath, dirname, finding_name in os.walk(path):
-            if name in finding_name:
-                return os.path.join(dirpath, name)
     
     ##터미널 사이즈 조사
     R_row,R_coulumn=os.popen('stty size', 'r').read().split()
@@ -39,26 +27,37 @@ def main(stdscr):
 
     ##입력된 이름 검색
     text1=box1.gather()+".txt"
-    filename=str(text1).replace(" ","")
-    filepath=findfile(f"{filename}","/")
-    
-    ##
-    if filepath==None:
+    filename=str(text1.replace(" ",""))
+    findfile = False
+    filetext = ""
+
+    for (path, dir, files) in os.walk("/"):
+        for filename in files:
+            ext = os.path.splitext(filename)[-1]
+            if ext == 'filename':
+                openfile=open(f"{filename}",'r')
+                filetext=openfile.read()
+                openfile.close()
+                findfile = True
+            else:
+                pass
+
+    if findfile==False:
         stdscr.addstr(row//2-1,coulmns//2-12,"파일을 찾을 수 없습니다.")
         stdscr.addstr(row//2,coulmns//2-8,"새로 생성합니다.")
         stdscr.refresh()
         time.sleep(3)
     else:
-        openfile=open(f"{filepath}","r")
-        filetext=openfile.read()
-        openfile.close()
-
+        pass
    
     ##두번째 화면: 파일 수정하는 화면
     win2=curses.newwin(row-5,coulmns-3,2,1)
     box2=Textbox(win2)
     rectangle(stdscr,1,0,row-3,coulmns-2)
-    box2.addstr(0,0,f"{filetext}")
+    #if findfile==False:
+    #    box2.addstr(0,0,f"{filetext}")
+    #else:
+    #    pass
     stdscr.addstr(0,0,"편집!".center(coulmns-2),BW_color)
     stdscr.addstr(row-2,0,"편집을 끝낼려면 Ctrl + G를 누르시오.".center(coulmns-12),BW_color)
     stdscr.refresh()
